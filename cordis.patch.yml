@@ -1,0 +1,41 @@
+# Bundle entry is enabled by default when installed through dsh plugin add.
+# Install this package into a DSH profile with:
+# npx @deepseek-ai/dsh plugin --profile desktop add dsh-zcode-cli
+#
+# Every key below matches the Config schema in src/provider/config.ts. The
+# ZCode environment contract (ZCODE_HOME / ZCODE_DATA_BASE_DIR /
+# ZCODE_BUILTIN_PROVIDER_CONFIG_FILE / ZCODE_PERSONAL_PROVIDER_CONFIG_FILE /
+# NODE_OPTIONS) is asserted fail-closed at request time by assertEnvContract()
+# in src/zcode/process.ts — and **auto-bootstrapped at apply() time by this
+# bundle (lib/bootstrap-env.js)**: contract values are derived, the CLI-only
+# provider config is generated, and the desktop pipe is discovered dynamically.
+- insert:
+    - id: dsh-zcode-cli
+      name: dsh-zcode-cli
+      config:
+        enabled: true
+        provider: zcode
+        model: GLM-5.3-Flash
+        # zcode-owned: tools run inside ZCode itself. "dsh-owned" requires
+        # projecting tool-call frames back to DSH, which this route cannot do
+        # (UNSUPPORTED_TOOLS at session start).
+        toolPolicy: zcode-owned
+        # resume: each turn sends only the new turn over `--resume sess_…`;
+        # "full" replays the whole rendered history and dies on the Windows
+        # 32767-char command line ceiling once the conversation grows.
+        sessionMode: resume
+        mode: guarded
+        imageInput: off
+        # Desktop pipe + build-fingerprint variables are passed to the CLI child
+        # (values are bootstrapped into the host process by lib/bootstrap-env.js;
+        # without them the upstream flags the request as unusual activity).
+        passEnv:
+          - ZCODE_OFFICIAL_ENDPOINT
+          - ZCODE_OFFICIAL_ENDPOINT_TOKEN
+          - ZCODE_ENV
+          - ZCODE_RUNTIME_ENV
+          - ZCODE_BASE_URL
+          - ZCODE_APP_VERSION
+          - ZCODE_BUILD_COMMIT_ID
+          - ZCODE_CLIENT_LANGUAGE
+          - ZCODE_WINDOWS_APP_INSTALL_DIR
