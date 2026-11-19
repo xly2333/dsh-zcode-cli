@@ -18,3 +18,9 @@
   the cache (their own turn finally closes them), LRU victim selection skips
   busy processes (cache may temporarily exceed the cap), and armIdle re-arms
   instead of killing while busy.
+
+- lib/provider/zcode.js (2026-11-20): when the CLI's failed terminal event
+  carries no errorCode (upstream free-route throttle windows), the previous
+  fallback discarded terminal.errorMessage as well, surfacing only the vague
+  "turn failed without an error code" and hiding real causes such as
+  "exceed quota limit". The terminal's errorMessage is now passed through.
