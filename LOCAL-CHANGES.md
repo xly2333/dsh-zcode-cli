@@ -8,3 +8,13 @@
   default (ZCODE_WIRE_LOG=1 re-enables it with 8MB rotation). The ungated log
   reached 383MB of unbounded growth, contradicting the plugin-resident,
   clean-shutdown lifecycle goal.
+
+- lib/zcode/app-server.js (2026-11-20): the process cache is keyed by
+  conversationId, so with many concurrent sessions the LRU cap (4) evicted
+  OTHER conversations' in-flight app-server processes mid-turn. close() on a
+  busy process rejected its pending RPCs as "ZCode app-server session was
+  torn down" and SIGKILLed the child, dying as "exited (code 1)" with empty
+  stderr. Eviction is now busy-aware: busy processes are only unlinked from
+  the cache (their own turn finally closes them), LRU victim selection skips
+  busy processes (cache may temporarily exceed the cap), and armIdle re-arms
+  instead of killing while busy.
