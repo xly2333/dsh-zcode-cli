@@ -24,3 +24,10 @@
   fallback discarded terminal.errorMessage as well, surfacing only the vague
   "turn failed without an error code" and hiding real causes such as
   "exceed quota limit". The terminal's errorMessage is now passed through.
+
+- lib/zcode/app-server.js (2026-11-20, second pass): the eager on('exit')
+  handler fired before the once('exit') handler and reported a bare
+  "exited (code N)" with no stderr tail, shadowing the diagnostic detail the
+  once-handler was written to provide. The eager handler now appends the
+  captured stderr tail, matching the once-handler, so genuine child crashes
+  surface their actual reason in the turn error message.
