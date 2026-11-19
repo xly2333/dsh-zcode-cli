@@ -31,3 +31,12 @@
   once-handler was written to provide. The eager handler now appends the
   captured stderr tail, matching the once-handler, so genuine child crashes
   surface their actual reason in the turn error message.
+
+- lib/zcode/app-server.js (2026-11-20, third pass): the free upstream route
+  rejects sends with "user concurrency limit exceeded" while other GLM
+  sessions are in flight. DSH's outer retry policy gives only 2 attempts at
+  1-2s intervals, so any turn started during another session's long turn
+  failed outright (observed as a dead ZCode->DSH bridge turn). In-plugin
+  wait-and-retry with its own counter now backs off 3s/8s/15s/25s/40s
+  (~91s total) before re-sending on the same CLI session; the outer policy
+  retries remain as the last-resort fallback.
